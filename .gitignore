@@ -1,0 +1,6 @@
+data/*lmdb*/
+data/images*/
+data/*binaryproto
+data/*caffemodel
+cudnn*
+cudann*/

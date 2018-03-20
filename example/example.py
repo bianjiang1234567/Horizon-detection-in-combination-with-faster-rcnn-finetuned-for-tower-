@@ -1,4 +1,18 @@
 from __future__ import division
+import os.path as osp
+import sys
+
+def add_path(path):
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+this_dir = osp.dirname(__file__)
+
+# Add caffe to PYTHONPATH
+caffe_path = osp.join(this_dir, '..', 'caffe', 'python')
+add_path(caffe_path)
+
+
 import caffe
 import numpy as np
 import scipy.io as sio
@@ -19,7 +33,7 @@ def center_crop(im):
     x_inds = [ul_x, ul_x+side_length-1]
     y_inds = [ul_y, sz[0]-1]
 
-  c_im = im[y_inds[0]:y_inds[1]+1, x_inds[0]:x_inds[1]+1, :]
+  c_im = im[int(y_inds[0]):int(y_inds[1]+1), int(x_inds[0]):int(x_inds[1]+1), :]
 
   return c_im, [c_im.shape, x_inds, y_inds]
 
@@ -81,7 +95,7 @@ def compute_horizon(slope_dist, offset_dist, caffe_sz, sz, crop_info, bin_edges)
   offset = bin2val(offset_bin, bin_edges['offset_bin_edges'])
   
   # (slope, offset) to (left, right)
-  offset = offset * caffe_sz[0]
+  offset = offset * caffe_sz[0]#caffe_sz 224*224
   c = offset / np.cos(np.abs(slope))
   caffe_left = -np.tan(slope)*caffe_sz[1]/2 + c
   caffe_right = np.tan(slope)*caffe_sz[1]/2 + c
@@ -104,14 +118,19 @@ if __name__ == '__main__':
  
   # image credit:
   # https://commons.wikimedia.org/wiki/File:HFX_Airport_4.jpg
-  fname = 'airport.jpg'
+  #fname = 'airport.jpg'
+  fname = '000100.bmp'
+  
 
   # load bin edges
-  bin_edges = sio.loadmat('bins.mat')
-
+  #bin_edges = sio.loadmat('bins.mat')
+  bin_edges = sio.loadmat('binspoint6.mat')
+  print "bin_edges=", bin_edges
   # load network
-  deploy_file = '../models/classification/so_places/deploy.net'
-  model_file = '../models/classification/so_places/so_places.caffemodel'
+  #deploy_file = '../models/classification/so_places/deploy.net'
+  #model_file = '../models/classification/so_places/so_places.caffemodel'
+  deploy_file = '../models/classification/lr_places/deploy.net'
+  model_file = '../models/classification/lr_places/lr_places.caffemodel'
   caffe.set_mode_cpu()
   net = caffe.Net(deploy_file, model_file, caffe.TEST)
   caffe_sz = np.asarray(net.blobs['data'].shape)[2:]
@@ -123,13 +142,35 @@ if __name__ == '__main__':
   caffe_input = preprocess(center_im, caffe_sz)
 
   # push through the network
-  result = net.forward(data=caffe_input, blobs=['prob_slope', 'prob_offset'])
-  slope_dist = result['prob_slope'][0]
-  offset_dist = result['prob_offset'][0]
+  #result = net.forward(data=caffe_input, blobs=['prob_slope', 'prob_offset'])uncommont
+  result = net.forward(data=caffe_input, blobs=['prob_left', 'prob_right'])
+  #slope_dist = result['prob_slope'][0]uncommont
+  #offset_dist = result['prob_offset'][0]uncommont
 
   # convert distributions to horizon line 
-  left, right = compute_horizon(slope_dist, offset_dist, caffe_sz, sz, crop_info, bin_edges)
-  print left[1], right[1] 
+  #left, right = compute_horizon(slope_dist, offset_dist, caffe_sz, sz, crop_info, bin_edges)uncommont
+  left = result['prob_left'][0]
+  right = result['prob_right'][0]
+  left_bin = np.argmax(left)
+  right_bin = np.argmax(right)
+  leftfinal = bin2val(left_bin, bin_edges['left_edges']) 
+  rightfinal = bin2val(right_bin, bin_edges['right_edges'])
+  
+  crop_sz, x_inds, y_inds = crop_info
+    # scale back to cropped image
+  c_left = leftfinal * (crop_sz[0] / caffe_sz[0])
+  c_right = rightfinal * (crop_sz[0] / caffe_sz[0])
+  # scale back to original image
+  center = [(sz[1]+1)/2, (sz[0]+1)/2]
+  crop_center = [np.dot(x_inds,[.5, .5])-center[0], center[1]-np.dot(y_inds,[.5, .5])]
+  left_tmp = np.asarray([-crop_sz[1]/2, c_left]) + crop_center 
+  right_tmp = np.asarray([crop_sz[1]/2, c_right]) + crop_center 
+  left, right = extrap_horizon(left_tmp, right_tmp, sz[1])
+  
+  
+  #print left[1], right[1]uncommont
+  print left, right
+  print caffe_sz 
  
   plt.figure(1)
   plt.imshow(im, extent=[-sz[1]/2, sz[1]/2, -sz[0]/2, sz[0]/2])

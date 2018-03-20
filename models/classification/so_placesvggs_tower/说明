@@ -1,0 +1,5 @@
+log snapshots 是原始ZF模型没有改变卷积层
+log2 snapshots2 是杆塔模型5层的 ZF_faster_rcnn_final
+log3 snapshots3 是杆塔模型3层的 加一个pooling层减少数据量
+log4 snapshots4 是杆塔模型5层的 分别在后三层采用1*1卷积层 最后所有层连接起来 加一个pooling层减少数据量
+log5 snapshots5 是杆塔模型5层的 分别在前两层采用1*1卷积层 最后所有层连接起来 加一个pooling层减少数据量

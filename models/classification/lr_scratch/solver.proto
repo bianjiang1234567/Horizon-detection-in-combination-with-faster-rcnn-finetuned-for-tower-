@@ -1,0 +1,14 @@
+net: "train.net"
+test_iter: 25 
+test_interval: 1000
+test_initialization: false
+display: 20
+snapshot: 1000
+snapshot_prefix: "snapshots/"
+solver_mode: GPU
+base_lr: 0.01
+lr_policy: "poly"
+power: 0.5
+momentum: 0.9
+weight_decay: 0.0005
+max_iter: 2400000 

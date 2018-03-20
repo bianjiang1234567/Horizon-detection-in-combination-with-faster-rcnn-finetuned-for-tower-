@@ -1,3 +1,12 @@
-deephorizon.zip
-classification/
-regression/
+deephorizon*.zip
+demo*
+classification/**/*caffemodel
+classification/**/log*/
+classification/**/snapshots*/
+classification/**/*pt
+classification/**/*bmp
+regression/**/*caffemodel
+regression/**/log*/
+regression/**/snapshots*/
+regression/**/*pt
+regression/**/*bmp
