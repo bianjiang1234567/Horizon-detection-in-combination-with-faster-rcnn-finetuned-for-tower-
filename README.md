@@ -44,3 +44,5 @@ Scott Workman
 University of Kentucky  
 http://cs.uky.edu/~scott/
 
+##
+It is in combination with faster rcnn for tower detection
