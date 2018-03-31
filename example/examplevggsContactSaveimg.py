@@ -76,11 +76,11 @@ def bin2val(bin_id, bin_edges):
 def extrap_horizon(left, right, width):
   
   hl_homo = np.cross(np.append(left, 1), np.append(right, 1))
-  #hl_left_homo = np.cross(hl_homo, [-1, 0, -width/2]);
-  hl_left_homo = np.cross(hl_homo, [-1, 0, -5000]);
+  hl_left_homo = np.cross(hl_homo, [-1, 0, -width/2]);
+  #hl_left_homo = np.cross(hl_homo, [-1, 0, -5000]);
   hl_left = hl_left_homo[0:2]/hl_left_homo[-1];
-  #hl_right_homo = np.cross(hl_homo, [-1, 0, width/2]);
-  hl_right_homo = np.cross(hl_homo, [-1, 0, 5000]);
+  hl_right_homo = np.cross(hl_homo, [-1, 0, width/2]);
+  #hl_right_homo = np.cross(hl_homo, [-1, 0, 5000]);
   hl_right = hl_right_homo[0:2]/hl_right_homo[-1];
   
   return hl_left, hl_right
@@ -151,22 +151,25 @@ if __name__ == '__main__':
   #fname = '174941563_950bf5e63e_o.jpg'
   #fname = '3049065234_f607dbe8ff_o.jpg'
   #fname = '3151766391_83e43f3d2a_o.jpg'
-  fname = '001000.bmp'
+  #fname = '001000.bmp'
   #fname = '12.jpg'
   #fname = '11.jpg'
   #fname = '000400.jpg'
   #fname = '003338.jpg'
   #fname = '002873.jpg'
   #fname = '002312.jpg'
+  fname = '000011.jpg'
   #fname = '002867.jpg'
   # load bin edges
   bin_edges = sio.loadmat('bins.mat')
 
   # load network
-  deploy_file = '../models/classification/so_placesvggs_tower/deploy5.net'
+  #deploy_file = '../models/classification/so_placesvggs_tower/deploy5.net'
   #model_file = '../models/classification/so_places/so_places.caffemodel'
   #model_file = '../models/classification/so_placesvggs/VGG_CNN_S.caffemodel'
-  model_file = '../models/classification/so_placesvggs_tower/snapshots5/solver5_iter_1000good.caffemodel'
+  #model_file = '../models/classification/so_placesvggs_tower/snapshots5/solver5_iter_1000good.caffemodel'
+  deploy_file = '../models/classification/so_places/deploy.net'
+  model_file = '../models/classification/so_places/so_places.caffemodel'
   caffe.set_mode_cpu()
   net = caffe.Net(deploy_file, model_file, caffe.TEST)
   caffe_sz = np.asarray(net.blobs['data'].shape)[2:]
@@ -200,4 +203,14 @@ if __name__ == '__main__':
   plt.plot([left[0], right[0]], [left[1], right[1]], 'r')
   ax = plt.gca();
   ax.autoscale_view('tight')
-  plt.show()
+  #plt.show()
+
+  #if image_name == None:
+    #img_path = './data/kernel_feature_picture100/'
+  #else:
+  img_path = './demoImg/'
+  #my_path = './data/kernel_feature_picture100/' + image_name + "/"
+    #check_file(my_path)
+  print 1
+  plt.savefig(img_path + fname,dpi=400, bbox_inches="tight")
+

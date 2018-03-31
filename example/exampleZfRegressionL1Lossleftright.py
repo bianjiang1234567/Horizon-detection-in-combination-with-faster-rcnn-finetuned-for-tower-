@@ -85,7 +85,7 @@ def extrap_horizon(left, right, width):
   
   return hl_left, hl_right
 
-def compute_horizon(slope_dist, offset_dist, caffe_sz, sz, crop_info, bin_edges):
+def compute_horizon(slope_dist, offset_dist, caffe_sz, sz, crop_info, bin_edges, slope_regress,offset_regress):
   
   # setup
   crop_sz, x_inds, y_inds = crop_info
@@ -103,12 +103,35 @@ def compute_horizon(slope_dist, offset_dist, caffe_sz, sz, crop_info, bin_edges)
   print "slope=",slope
   print "offset=",offset
   
+  ##########################################################degress
+  #slope=slope_regress/180*3.141592653
+  ##########################################################
+  ##########################################################rad
+  #slope=slope_regress
+  ##########################################################
   
   # (slope, offset) to (left, right)
+  
+  ##########################################################normlize offset
+  #offset=offset_regress
+  ##########################################################
+  
   offset = offset * caffe_sz[0]
+  
+  ##########################################################224*224 offset
+  #offset=offset_regress
+  ##########################################################
+  
   c = offset / np.cos(np.abs(slope))
   caffe_left = -np.tan(slope)*caffe_sz[1]/2 + c
   caffe_right = np.tan(slope)*caffe_sz[1]/2 + c
+  
+  
+  ########################################################## 
+  caffe_left = left_regress*caffe_sz[1]
+  caffe_right = right_regress*caffe_sz[1]
+  ##########################################################
+
 
   print "caffe_left=",caffe_left
   print "caffe_right=",caffe_right
@@ -151,11 +174,11 @@ if __name__ == '__main__':
   #fname = '174941563_950bf5e63e_o.jpg'
   #fname = '3049065234_f607dbe8ff_o.jpg'
   #fname = '3151766391_83e43f3d2a_o.jpg'
-  fname = '001000.bmp'
+  #fname = '001000.bmp'
   #fname = '12.jpg'
   #fname = '11.jpg'
   #fname = '000400.jpg'
-  #fname = '003338.jpg'
+  fname = '003338.jpg'
   #fname = '002873.jpg'
   #fname = '002312.jpg'
   #fname = '002867.jpg'
@@ -163,10 +186,9 @@ if __name__ == '__main__':
   bin_edges = sio.loadmat('bins.mat')
 
   # load network
-  deploy_file = '../models/classification/so_placesvggs_tower/deploy5.net'
-  #model_file = '../models/classification/so_places/so_places.caffemodel'
-  #model_file = '../models/classification/so_placesvggs/VGG_CNN_S.caffemodel'
-  model_file = '../models/classification/so_placesvggs_tower/snapshots5/solver5_iter_1000good.caffemodel'
+  deploy_file = '../models/regression/regularize_so_L1Loss_ZF/deploy.net'
+  #model_file = '../models/regression/regularize_so_l2_vggs/regularize_so_l2.caffemodel'
+  model_file = '../models/regression/regularize_so_L1Loss_ZF/snapshots/solver_iter_60000.caffemodel'
   caffe.set_mode_cpu()
   net = caffe.Net(deploy_file, model_file, caffe.TEST)
   caffe_sz = np.asarray(net.blobs['data'].shape)[2:]
@@ -181,18 +203,30 @@ if __name__ == '__main__':
   print "crop_info:crop_sz, x_inds, y_inds=",crop_info
 
   # push through the network
-  result = net.forward(data=caffe_input, blobs=['prob_slope', 'prob_offset'])
+  result = net.forward(data=caffe_input, blobs=['prob_slope', 'prob_offset','left_regress','right_regress'])
   slope_dist = result['prob_slope'][0]
   offset_dist = result['prob_offset'][0]
-  #offset_dist = result['prob_slope'][0]
-  #slope_dist = result['prob_offset'][0]
+  left_regress = result['left_regress'][0]#degrees
+  right_regress = result['right_regress'][0]#224*224 distance
   
+  #result = net.forward(data=caffe_input, blobs=['prob_left', 'prob_right'])
+  #left_dist = result['prob_left'][0]
+  #right_dist = result['prob_right'][0]
+  #left_regress = result['left_regress'][0]
+  #right_regress = result['right_regress'][0]
+  #print "left_dist=",left_dist
+  #print "right_dist=",right_dist
+  #print "left_regress=",left_regress
+  #print "right_regress=",right_regress
   
   print "slope_dist=",slope_dist
   print "offset_dist=",offset_dist
+  print "left_regress=",left_regress
+  print "right_regress=",right_regress
+
 
   # convert distributions to horizon line 
-  left, right = compute_horizon(slope_dist, offset_dist, caffe_sz, sz, crop_info, bin_edges)
+  left, right = compute_horizon(slope_dist, offset_dist, caffe_sz, sz, crop_info, bin_edges, right_regress,left_regress)
   print left[1], right[1] 
  
   plt.figure(1)

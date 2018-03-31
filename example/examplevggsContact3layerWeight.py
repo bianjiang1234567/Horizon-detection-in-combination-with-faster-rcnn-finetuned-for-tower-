@@ -151,8 +151,8 @@ if __name__ == '__main__':
   #fname = '174941563_950bf5e63e_o.jpg'
   #fname = '3049065234_f607dbe8ff_o.jpg'
   #fname = '3151766391_83e43f3d2a_o.jpg'
-  fname = '001000.bmp'
-  #fname = '12.jpg'
+  #fname = '001000.bmp'
+  fname = '12.jpg'
   #fname = '11.jpg'
   #fname = '000400.jpg'
   #fname = '003338.jpg'
@@ -163,10 +163,10 @@ if __name__ == '__main__':
   bin_edges = sio.loadmat('bins.mat')
 
   # load network
-  deploy_file = '../models/classification/so_placesvggs_tower/deploy5.net'
+  deploy_file = '../models/classification/so_placesvggs_tower/deploy7.net'
   #model_file = '../models/classification/so_places/so_places.caffemodel'
   #model_file = '../models/classification/so_placesvggs/VGG_CNN_S.caffemodel'
-  model_file = '../models/classification/so_placesvggs_tower/snapshots5/solver5_iter_1000good.caffemodel'
+  model_file = '../models/classification/so_placesvggs_tower/snapshots7/solver7_iter_125000.caffemodel'
   caffe.set_mode_cpu()
   net = caffe.Net(deploy_file, model_file, caffe.TEST)
   caffe_sz = np.asarray(net.blobs['data'].shape)[2:]
